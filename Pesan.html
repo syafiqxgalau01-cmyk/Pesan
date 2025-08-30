@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pesan Random — Mini</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#7c3aed; --muted:#93a3b4;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(180deg,#031124 0%, #062033 100%); color:#e6eef8;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      padding:24px;
+    }
+
+    .container{
+      width:100%; max-width:900px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:16px; padding:22px; box-shadow: 0 8px 30px rgba(3,6,23,0.6);
+      display:grid; grid-template-columns: 1fr 340px; gap:18px;
+    }
+
+    header{display:flex; align-items:center; gap:12px; margin-bottom:6px}
+    .logo{
+      width:52px; height:52px; border-radius:12px; background:linear-gradient(135deg,var(--accent),#06b6d4);
+      display:flex; align-items:center; justify-content:center; font-weight:700; color:white; font-size:18px;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.18);
+    }
+    h1{font-size:18px; margin:0}
+    p.lead{margin:0; color:var(--muted); font-size:13px}
+
+    /* utama */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:12px; padding:18px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    .messageBox{
+      min-height:160px; display:flex; align-items:center; justify-content:center;
+      text-align:center; padding:18px; border-radius:10px; font-size:20px; line-height:1.4;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      position:relative; overflow:hidden;
+    }
+    .messageText{padding:6px 12px; max-width:90%}
+    .controls{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+
+    button{
+      background:var(--accent); color:white; border:0; padding:10px 14px; border-radius:10px; cursor:pointer;
+      font-weight:600; box-shadow: 0 6px 18px rgba(124,58,237,0.16);
+    }
+    .btn-ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted); box-shadow:none}
+    .btn-small{padding:8px 10px; font-size:14px}
+
+    /* sidebar */
+    .sidebar{display:flex; flex-direction:column; gap:12px}
+    .list{max-height:320px; overflow:auto; padding:10px; border-radius:8px; background:var(--glass); border:1px solid rgba(255,255,255,0.02)}
+    .list-item{display:flex; align-items:center; justify-content:space-between; padding:8px; border-radius:6px; margin-bottom:6px; background:transparent}
+    .msg-preview{color:var(--muted); font-size:14px; flex:1; margin-right:8px}
+    .small{font-size:13px; color:var(--muted)}
+
+    input[type="text"], textarea{
+      width:100%; padding:10px;border-radius:8px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:inherit;
+      resize:vertical;
+    }
+
+    footer{grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:var(--muted); font-size:13px}
+
+    /* responsive */
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr; padding:16px}
+      .sidebar{order:2}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="Pesan Random mini">
+    <div>
+      <header>
+        <div class="logo">PR</div>
+        <div>
+          <h1>Pesan Random</h1>
+          <p class="lead">Tekan tombol untuk menampilkan pesan acak. Bisa disalin, dibagikan, dan disimpan.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="messageBox" id="messageBox" aria-live="polite">
+          <div class="messageText" id="messageText">Tekan "Acak Pesan" untuk mulai ✨</div>
+        </div>
+
+        <div class="controls">
+          <button id="randomBtn">🎲 Acak Pesan</button>
+          <button class="btn-ghost btn-small" id="copyBtn">📋 Salin</button>
+          <button class="btn-ghost btn-small" id="shareBtn">🔗 Bagikan</button>
+          <button class="btn-ghost btn-small" id="favBtn">⭐ Simpan Favorit</button>
+          <button class="btn-ghost btn-small" id="typeToggle">⌨️ Efek Ketik: Mati</button>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <label class="small">Pilih kategori:</label>
+          <select id="categorySelect">
+            <option value="semua">Semua</option>
+            <option value="bijak">Bijak</option>
+            <option value="ngakak">Ngakak</option>
+            <option value="romantis">Romantis</option>
+            <option value="random">Random pendek</option>
+          </select>
+
+          <label class="small" style="margin-left:8px">Auto-acak:</label>
+          <input type="checkbox" id="autoToggle" />
+          <input type="number" id="autoInterval" value="5000" min="1000" style="width:110px; margin-left:6px" />
+        </div>
+      </div>
+
+      <footer>
+        <div>Versi mini • Dibuat untukmu</div>
+        <div class="small">Tidak bisa buka tautan? Tempelkan konten situs di chat untuk dibuatkan duplikat lebih persis.</div>
+      </footer>
+    </div>
+
+    <aside class="sidebar">
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Daftar Pesan (editable)</h3>
+        <div class="list" id="messageList" aria-label="Daftar pesan">
+          <!-- items injected here -->
+        </div>
+
+        <div style="margin-top:8px;">
+          <textarea id="newMsg" rows="3" placeholder="Tulis pesan baru di sini..."></textarea>
+          <div style="display:flex; gap:8px; margin-top:8px">
+            <button id="addMsgBtn" class="btn-small">➕ Tambah</button>
+            <button id="resetBtn" class="btn-ghost btn-small">♻️ Reset ke default</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Favorit</h3>
+        <div id="favList" class="list" style="max-height:160px"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // contoh pesan default (bisa kamu ubah)
+    const defaultMessages = [
+      {text: "Selamat pagi! Semoga harimu penuh energi.", cat:"bijak"},
+      {text: "Jangan lupa makan ya, biar kuat ngoding.", cat:"bijak"},
+      {text: "Kamu cakep banget hari ini 😉", cat:"romantis"},
+      {text: "Kalau nggak lucu, jangan marah ya. Ini cuma canda.", cat:"ngakak"},
+      {text: "Kopi + kode = hidup.", cat:"random"},
+      {text: "Bersyukur itu sederhana: tarik napas, tersenyum.", cat:"bijak"},
+      {text: "Kamu bikin server aku meleleh (karena terlalu keren).", cat:"ngakak"},
+      {text: "Senyum itu gratis. Biarin orang lain dapat diskon.", cat:"romantis"},
+      {text: "Jangan takut gagal — takutlah kalau nggak pernah coba.", cat:"bijak"}
+    ];
+
+    // app state
+    let messages = [];
+    let favorites = [];
+    let typeEffect = false;
+    let typingTimeout = null;
+    let autoTimer = null;
+
+    // elements
+    const messageText = document.getElementById('messageText');
+    const randomBtn = document.getElementById('randomBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const favBtn = document.getElementById('favBtn');
+    const messageList = document.getElementById('messageList');
+    const favList = document.getElementById('favList');
+    const addMsgBtn = document.getElementById('addMsgBtn');
+    const newMsg = document.getElementById('newMsg');
+    const resetBtn = document.getElementById('resetBtn');
+    const typeToggle = document.getElementById('typeToggle');
+    const categorySelect = document.getElementById('categorySelect');
+    const autoToggle = document.getElementById('autoToggle');
+    const autoInterval = document.getElementById('autoInterval');
+
+    // helpers
+    function loadState(){
+      const s = localStorage.getItem('pr_messages');
+      const f = localStorage.getItem('pr_favorites');
+      messages = s ? JSON.parse(s) : structuredClone(defaultMessages);
+      favorites = f ? JSON.parse(f) : [];
+    }
+    function saveState(){
+      localStorage.setItem('pr_messages', JSON.stringify(messages));
+      localStorage.setItem('pr_favorites', JSON.stringify(favorites));
+    }
+
+    function renderMessageList(){
+      messageList.innerHTML = '';
+      messages.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        const preview = document.createElement('div');
+        preview.className = 'msg-preview';
+        preview.textContent = m.text;
+        const right = document.createElement('div');
+        right.style.display='flex'; right.style.gap='6px';
+        const del = document.createElement('button');
+        del.className='btn-ghost btn-small'; del.textContent='🗑';
+        del.title = 'Hapus pesan';
+        del.onclick = ()=>{ messages.splice(i,1); saveState(); renderMessageList(); renderFavs(); };
+        const edit = document.createElement('button');
+        edit.className='btn-ghost btn-small'; edit.textContent='✏️';
+        edit.title='Edit pesan';
+        edit.onclick = ()=>{
+          const t = prompt('Edit pesan:', m.text);
+          if(t !== null){ messages[i].text = t.trim(); saveState(); renderMessageList(); }
+        };
+        const addFav = document.createElement('button');
+        addFav.className='btn-ghost btn-small'; addFav.textContent='⭐';
+        addFav.title='Tambahkan ke favorit';
+        addFav.onclick = ()=>{ favorites.push(m); saveState(); renderFavs(); };
+
+        right.appendChild(addFav);
+        right.appendChild(edit);
+        right.appendChild(del);
+
+        item.appendChild(preview);
+        item.appendChild(right);
+        messageList.appendChild(item);
+      });
+    }
+
+    function renderFavs(){
+      favList.innerHTML = '';
+      favorites.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className='list-item';
+        const preview=document.createElement('div');
+        preview.className='msg-preview'; preview.textContent = m.text;
+        const rm=document.createElement('button');
+        rm.className='btn-ghost btn-small'; rm.textContent='✖';
+        rm.onclick = ()=>{ favorites.splice(i,1); saveState(); renderFavs(); };
+        item.appendChild(preview); item.appendChild(rm);
+        favList.appendChild(item);
+      });
+    }
+
+    function getFilteredMessages(){
+      const cat = categorySelect.value;
+      if(cat === 'semua') return messages;
+      return messages.filter(m => m.cat === cat);
+    }
+
+    function randomMessage(){
+      const pool = getFilteredMessages();
+      if(pool.length === 0){
+        showMessage("Tidak ada pesan di kategori ini. Tambahkan dulu di samping kanan.", true);
+        return;
+      }
+      const pick = pool[Math.floor(Math.random()*pool.length)];
+      showMessage(pick.text);
+    }
+
+    function showMessage(text, instant){
+      clearTimeout(typingTimeout);
+      if(typeEffect && !instant){
+        messageText.textContent = '';
+        const chars = text.split('');
+        let idx = 0;
+        (function typeChar(){
+          if(idx >= chars.length) return;
+          messageText.textContent += chars[idx++];
+          typingTimeout = setTimeout(typeChar, 30 + Math.random()*60);
+        })();
+      }else{
+        messageText.textContent = text;
+      }
+    }
+
+    // button actions
+    randomBtn.onclick = ()=>{
+      randomMessage();
+    };
+
+    copyBtn.onclick = async ()=>{
+      const txt = messageText.textContent.trim();
+      if(!txt) return alert('Belum ada pesan untuk disalin.');
+      try{
+        await navigator.clipboard.writeText(txt);
+        alert('Tersalin ke clipboard ✅');
+      }catch(e){
+        alert('Gagal menyalin. Izinkan clipboard atau salin manual.');
+      }
+    };
+
+    shareBtn.onclick = async ()=>{
+      const txt = messageText.textContent.trim();
+      if(!txt) return alert('Tidak ada pesan untuk dibagikan.');
+      if(navigator.share){
+        try{
+          await navigator.share({title:'Pesan Random', text:txt});
+        }catch(e){}
+      }else{
+        alert('Fitur share tidak tersedia di perangkat ini. Silakan salin manual.');
+      }
+    };
+
+    favBtn.onclick = ()=>{
+      const txt = messageText.textContent.trim();
+      if(!txt) return alert('Tidak ada pesan untuk disimpan.');
+      favorites.push({text:txt, cat:'saved'});
+      saveState(); renderFavs();
+      alert('Disimpan ke favorit ⭐');
+    };
+
+    addMsgBtn.onclick = ()=>{
+      const t = newMsg.value.trim();
+      if(!t) return alert('Tulis pesan dulu.');
+      messages.unshift({text:t, cat:'custom'});
+      newMsg.value='';
+      saveState(); renderMessageList();
+      alert('Pesan ditambahkan!');
+    };
+
+    resetBtn.onclick = ()=>{
+      if(!confirm('Reset pesan ke default? Semua pesan kustom akan hilang.')) return;
+      messages = structuredClone(defaultMessages);
+      favorites = [];
+      saveState(); renderMessageList(); renderFavs();
+    };
+
+    typeToggle.onclick = ()=>{
+      typeEffect = !typeEffect;
+      typeToggle.textContent = `⌨️ Efek Ketik: ${typeEffect ? 'Hidup' : 'Mati'}`;
+    };
+
+    // auto-acak
+    autoToggle.onchange = ()=>{
+      if(autoToggle.checked){
+        startAuto();
+      }else stopAuto();
+    };
+    autoInterval.onchange = ()=>{
+      if(autoToggle.checked){
+        startAuto();
+      }
+    };
+
+    function startAuto(){
+      stopAuto();
+      const t = Math.max(1000, parseInt(autoInterval.value) || 5000);
+      autoTimer = setInterval(()=> randomMessage(), t);
+    }
+    function stopAuto(){
+      if(autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    // initial
+    loadState();
+    renderMessageList();
+    renderFavs();
+
+    // if user pressed Enter on textarea while holding Ctrl => add
+    newMsg.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)){
+        addMsgBtn.click();
+      }
+    });
+
+    // keyboard shortcut: space or Enter to random
+    window.addEventListener('keydown',(e)=>{
+      if(e.code === 'Space' || e.key === 'Enter'){
+        const active = document.activeElement;
+        if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return;
+        e.preventDefault();
+        randomBtn.click();
+      }
+    });
+
+    // accessibility: focus initial
+    randomBtn.focus();
+
+    // show welcome example message after short delay
+    setTimeout(()=> showMessage("Halo! Tekan tombol 'Acak Pesan' atau tekan spasi untuk mulai ✨", true), 400);
+  </script>
+</body>
+</html>
